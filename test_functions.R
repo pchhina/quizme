@@ -1,8 +1,8 @@
 library(stringr)
 
 make_quiz <- function(quizfile = "quiz.txt") {
-    reposol <- readLines(quizfile)
-    test <- reposol[str_detect(reposol, "^#")]
+    reposol <<- readLines(quizfile)
+    test <<- reposol[str_detect(reposol, "^#")]
 }
 
 ask <- function() {
