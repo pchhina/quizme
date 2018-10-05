@@ -1,13 +1,13 @@
 library(stringr)
 
-# read the repo text file
-repo <- readLines("test.R")
+# read qa.txt
+reposol <- readLines("qa.txt")
 
-# read solutions
-reposol <- readLines("test_file.R")
+# create questions repo
+questions <- reposol[str_detect(reposol, "^#")]
 
 ask <- function() {
-    question <- repo[sample(1:length(repo), 1)]
+    question <- questions[sample(1:length(questions), 1)]
     cat(paste(question, "\n"))
 }
 
