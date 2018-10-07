@@ -13,6 +13,6 @@ three objects: q_tbl, sol_tbl and data_tbl containing questions, answers and met
 If using for the first time, creates .quizme directory in users home directory for data storage. Also creates empty objects for storing question/answer data.
 }
 \examples{
-make_quiz()
+\dontrun{make_quiz()}
 
 }

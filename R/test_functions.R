@@ -1,15 +1,15 @@
-library(stringr)
-library(tibble)
-library(dplyr)
-
+utils::globalVariables(c("q_tbl", "sol_tbl", "data_tbl", "q_id", "<<-"), add = TRUE)
 #' Load quiz data into R environment
 #' 
 #' If using for the first time, creates .quizme directory in users home directory for data storage. Also creates empty objects for storing question/answer data.
 #' 
 #' @return three objects: q_tbl, sol_tbl and data_tbl containing questions, answers and metadata
 #' 
+#' @importFrom tibble tibble
+#' @importFrom readr read_rds
+#' 
 #' @examples
-#' make_quiz()
+#' \dontrun{make_quiz()}
 #' 
 #' @export
 make_quiz <- function() {
@@ -42,7 +42,7 @@ make_quiz <- function() {
 #' @return three objects: q_tbl, sol_tbl and data_tbl updated with the new question-answer.
 #' 
 #' @examples
-#' addq()
+#' \dontrun{addq()}
 #' 
 #' @export
 addq <- function() {
@@ -66,7 +66,9 @@ addq <- function() {
 #' @return randomly selected question
 #' 
 #' @examples
-#' ask()
+#' \dontrun{ask()}
+#' 
+#' @importFrom dplyr pull
 #' 
 #' @export
 ask <- function() {
@@ -82,7 +84,7 @@ ask <- function() {
 #' @return answer to the last question presented. This helps the user to evaluate their answer.
 #' 
 #' @examples
-#' tell()
+#' \dontrun{tell()}
 #' 
 #' @export
 tell <- function() {
@@ -98,8 +100,10 @@ tell <- function() {
 #' 
 #' @return None
 #' 
+#' @importFrom readr write_rds
+#' 
 #' @examples
-#' bye()
+#' \dontrun{bye()}
 #' 
 #' @export
 bye <- function() {

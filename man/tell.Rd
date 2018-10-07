@@ -13,6 +13,6 @@ answer to the last question presented. This helps the user to evaluate their ans
 This will show the answer to the last question presented
 }
 \examples{
-tell()
+\dontrun{tell()}
 
 }

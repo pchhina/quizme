@@ -13,6 +13,6 @@ three objects: q_tbl, sol_tbl and data_tbl updated with the new question-answer.
 Add question in one line (without carriage return). Add answers in the following line(s). Carriage return in a blank line will save the question and answer to the data objects.
 }
 \examples{
-addq()
+\dontrun{addq()}
 
 }

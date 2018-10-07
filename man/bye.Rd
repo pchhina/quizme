@@ -13,6 +13,6 @@ None
 This is important as it updates the files on disk with any new questions added in current session. After updating the qa file, it clears out the R environment by removing the objects and functions related to this package.
 }
 \examples{
-bye()
+\dontrun{bye()}
 
 }

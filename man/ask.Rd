@@ -13,6 +13,6 @@ randomly selected question
 A randomly selected question will be shown. For R questions, you can simply enter your answer (code) at the R console directly. Answers are not evaluated by the package. This is up to the user to decide whether they answered the question correctly or not.
 }
 \examples{
-ask()
+\dontrun{ask()}
 
 }
