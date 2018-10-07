@@ -2,6 +2,16 @@ library(stringr)
 library(tibble)
 library(dplyr)
 
+#' Load quiz data into R environment
+#' 
+#' If using for the first time, creates .quizme directory in users home directory for data storage. Also creates empty objects for storing question/answer data.
+#' 
+#' @return three objects: q_tbl, sol_tbl and data_tbl containing questions, answers and metadata
+#' 
+#' @examples
+#' make_quiz()
+#' 
+#' @export
 make_quiz <- function() {
     if(!dir.exists("~/.quizme")) {
         dir.create("~/.quizme")
@@ -25,6 +35,16 @@ make_quiz <- function() {
 
 }
 
+#' Add question-answer
+#' 
+#' Add question in one line (without carriage return). Add answers in the following line(s). Carriage return in a blank line will save the question and answer to the data objects.
+#' 
+#' @return three objects: q_tbl, sol_tbl and data_tbl updated with the new question-answer.
+#' 
+#' @examples
+#' addq()
+#' 
+#' @export
 addq <- function() {
     x <- scan(what = character(), sep = "\n")
     tot <- nrow(q_tbl)
@@ -39,12 +59,32 @@ addq <- function() {
     data_tbl[[4]][tot + 1] <<- "new"
 }
 
+#' Show a question from the Q&A repository
+#' 
+#' A randomly selected question will be shown. For R questions, you can simply enter your answer (code) at the R console directly. Answers are not evaluated by the package. This is up to the user to decide whether they answered the question correctly or not.
+#' 
+#' @return randomly selected question
+#' 
+#' @examples
+#' ask()
+#' 
+#' @export
 ask <- function() {
     q_id <<- sample(1:nrow(q_tbl), 1, prob = pull(q_tbl[, 3]))
     question <- q_tbl[q_id, 2]
     cat(paste(question, "\n"))
 }
 
+#' Show answer
+#' 
+#' This will show the answer to the last question presented
+#' 
+#' @return answer to the last question presented. This helps the user to evaluate their answer.
+#' 
+#' @examples
+#' tell()
+#' 
+#' @export
 tell <- function() {
     answer <- sol_tbl[[2]][[q_id]]
     for(i in seq_along(answer)) {
@@ -52,6 +92,16 @@ tell <- function() {
     }
     }
 
+#' Closes the quiz session
+#' 
+#' This is important as it updates the files on disk with any new questions added in current session. After updating the qa file, it clears out the R environment by removing the objects and functions related to this package.
+#' 
+#' @return None
+#' 
+#' @examples
+#' bye()
+#' 
+#' @export
 bye <- function() {
     write_rds(list(q_tbl, sol_tbl, data_tbl), "~/.quizme/quizdata")
     vars <- c("q_tbl", "sol_tbl", "data_tbl", "q_id", "make_quiz",
