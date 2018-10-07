@@ -1,11 +1,13 @@
-# quizme: automatic test generator from user's text file
+# quizme: solidify your learning through deliberate practice
 
-## This project contains functions to 
-- take the user's text file in question/answer format and generates test questions for self quizzing
-- since the input file is a plain vanilla ASCII text file, the questions are language agnostic. This opens up possibilities to mix/match any learning material that you are currently focusing on
+## An R package to
+- create a repository of question & answers on any subject
+- create a quiz from the q&a repository that can be practiced from R console
 
 ## Usage
-- Download test.R, test_file.R and test_functions.R in your working directory
-- In R console, run `source("test_functions.R")`
-- test.R contains list of questions tagged by #<id> while test_file.R contains both questions and answers
-- In R console, use `ask()` to present you with a question and `tell(<id>)` to show you the answer
+- Install the package from github: `install_github("pchhina/quizme")`
+- `make_quiz()` to load q&a set. If q&a set does not exist, a skeleton file structure is created to which questions can be added (see below) 
+- `addq()` to add a new question-answer. First line should be a question. Answer can be multiple lines. Carriage return on blank line adds your question
+- `ask()` presents a randomly picked question from your repository
+- `tell()` show the answer to the current question
+- `bye()` updates the repository with new questions from the current session. removes objects related to this package.
