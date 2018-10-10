@@ -72,9 +72,13 @@ addq <- function() {
 #' 
 #' @export
 ask <- function() {
+    if(nrow(q_tbl) == 0) {
+        cat("no questions exist yet \nplease use addq() to add questions\n")
+    } else {
     q_id <<- sample(1:nrow(q_tbl), 1, prob = pull(q_tbl[, 3]))
     question <- q_tbl[q_id, 2]
     cat(paste(question, "\n"))
+    }
 }
 
 #' Show answer
@@ -88,11 +92,15 @@ ask <- function() {
 #' 
 #' @export
 tell <- function() {
+    if(nrow(q_tbl) == 0) {
+        cat("no questions exist yet \nplease use addq() to add questions\n")
+    } else {
     answer <- sol_tbl[[2]][[q_id]]
     for(i in seq_along(answer)) {
         cat(paste(answer[i],"\n"))
     }
     }
+}
 
 #' Closes the quiz session
 #' 
