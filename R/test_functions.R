@@ -19,8 +19,11 @@ make_quiz <- function() {
     if(!file.exists("~/.quizme/quizdata")) {
     q_tbl <<- data.table(id = integer(0),
                 question = character(0),
-                tags = character(0))
+                tags = character(0),
+                time_created = .POSIXct(character(0)))
     sol_tbl <<- list(id = integer(0), answer = list())
+    testlog_tbl <<- data.table(id = integer(0)
+                               )
     } else {
         data_obj <- read_rds("~/.quizme/quizdata")
         q_tbl <<- data_obj[[1]] 
@@ -43,7 +46,8 @@ addq <- function(tags = c("")) {
     tot <- nrow(q_tbl)
     q <- data.table(id = tot + 1L,
                      question = x[1],
-                     tags = tags)
+                     tags = tags,
+                     time_created = Sys.time())
     q_tbl <<- rbindlist(list(q_tbl, q))
     sol_tbl[[1]][tot + 1] <<- tot + 1L
     sol_tbl[[2]][[tot + 1]] <<- x[-1]
