@@ -5,7 +5,7 @@ utils::globalVariables(c("q_tbl", "sol_tbl", "data_tbl", "q_id", "<<-"), add = T
 #' 
 #' @return three objects: q_tbl, sol_tbl and data_tbl containing questions, answers and metadata
 #' 
-#' @importFrom tibble tibble
+#' @importFrom data.table data.table fread rbindlist
 #' @importFrom readr read_rds
 #' 
 #' @examples
@@ -17,22 +17,15 @@ make_quiz <- function() {
         dir.create("~/.quizme")
     }
     if(!file.exists("~/.quizme/quizdata")) {
-    q_tbl <<- tibble(id = integer(0),
+    q_tbl <<- data.table(id = integer(0),
                 question = character(0),
-                prob = double(0))
+                tags = character(0))
     sol_tbl <<- list(id = integer(0), answer = list())
-    data_tbl <<- list(id = integer(0),
-                 t_create = character(0),
-                 dt = double(0),
-                 status = character(0))
-
     } else {
         data_obj <- read_rds("~/.quizme/quizdata")
         q_tbl <<- data_obj[[1]] 
         sol_tbl <<- data_obj[[2]] 
-        data_tbl <<- data_obj[[3]] 
     }
-
 }
 
 #' Add question-answer
@@ -45,18 +38,15 @@ make_quiz <- function() {
 #' \dontrun{addq()}
 #' 
 #' @export
-addq <- function() {
+addq <- function(tags = c("")) {
     x <- scan(what = character(), sep = "\n")
     tot <- nrow(q_tbl)
-    q_tbl[tot + 1, 1] <<- tot + 1L
-    q_tbl[tot + 1, 2] <<- x[1]
-    q_tbl[tot + 1, 3] <<- 120
+    q <- data.table(id = tot + 1L,
+                     question = x[1],
+                     tags = tags)
+    q_tbl <<- rbindlist(list(q_tbl, q))
     sol_tbl[[1]][tot + 1] <<- tot + 1L
     sol_tbl[[2]][[tot + 1]] <<- x[-1]
-    data_tbl[[1]][tot + 1] <<- tot + 1L
-    data_tbl[[2]][tot + 1] <<- Sys.time()
-    data_tbl[[3]][tot + 1] <<- 120
-    data_tbl[[4]][tot + 1] <<- "new"
 }
 
 #' Show a question from the Q&A repository
@@ -68,14 +58,13 @@ addq <- function() {
 #' @examples
 #' \dontrun{ask()}
 #' 
-#' @importFrom dplyr pull
 #' 
 #' @export
 ask <- function() {
     if(nrow(q_tbl) == 0) {
         cat("no questions exist yet \nplease use addq() to add questions\n")
     } else {
-    q_id <<- sample(1:nrow(q_tbl), 1, prob = pull(q_tbl[, 3]))
+    q_id <<- sample(1:nrow(q_tbl), 1)
     question <- q_tbl[q_id, 2]
     cat(paste(question, "\n"))
     }
