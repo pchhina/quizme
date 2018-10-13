@@ -27,8 +27,7 @@ quizme <- function() {
                                dt = double(0),
                                response = factor(levels = c("Y", "N")))
     ranktbl <<- data.table(id = integer(0),
-                           duedate = as.Date(character(0)),
-                           duetime = .POSIXct(character(0)),
+                           due = .POSIXct(character(0)),
                            status = factor(levels = c("new",
                                                       "learning",
                                                       "learned",
@@ -62,6 +61,19 @@ addq <- function(tags = c("")) {
     qtbl <<- rbindlist(list(qtbl, q))
     soltbl[[1]][tot + 1] <<- tot + 1L
     soltbl[[2]][[tot + 1]] <<- x[-1]
+    addToRankingTbl()
+}
+
+#' Add question to ranking table
+#' 
+#' @return updated rankingtbl
+#' 
+addToRankingTbl <- function() {
+    r <- data.table(id = qtbl[id == max(id), id],
+                     due = Sys.time(),
+                     status = "new",
+                     rank = nrow(ranktbl) + 1)
+    ranktbl <<- rbindlist(list(ranktbl, r))
 }
 
 #' Show a question from the Q&A repository
