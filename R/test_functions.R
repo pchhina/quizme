@@ -12,18 +12,29 @@ utils::globalVariables(c("q_tbl", "sol_tbl", "data_tbl", "q_id", "<<-"), add = T
 #' \dontrun{make_quiz()}
 #' 
 #' @export
-make_quiz <- function() {
+quizme <- function() {
     if(!dir.exists("~/.quizme")) {
         dir.create("~/.quizme")
     }
     if(!file.exists("~/.quizme/quizdata")) {
-    q_tbl <<- data.table(id = integer(0),
+    qtbl <<- data.table(id = integer(0),
                 question = character(0),
                 tags = character(0),
-                time_created = .POSIXct(character(0)))
-    sol_tbl <<- list(id = integer(0), answer = list())
-    testlog_tbl <<- data.table(id = integer(0)
-                               )
+                timecreated = .POSIXct(character(0)))
+    soltbl <<- list(id = integer(0), answer = list())
+    testlog <<- data.table(id = integer(0),
+                               time = .POSIXct(character(0)),
+                               dt = double(0),
+                               response = factor(levels = c("Y", "N")))
+    ranktbl <<- data.table(id = integer(0),
+                           duedate = as.Date(character(0)),
+                           duetime = .POSIXct(character(0)),
+                           status = factor(levels = c("new",
+                                                      "learning",
+                                                      "learned",
+                                                      "mastered")),
+                           rank = integer(0)
+                           )
     } else {
         data_obj <- read_rds("~/.quizme/quizdata")
         q_tbl <<- data_obj[[1]] 
@@ -43,14 +54,14 @@ make_quiz <- function() {
 #' @export
 addq <- function(tags = c("")) {
     x <- scan(what = character(), sep = "\n")
-    tot <- nrow(q_tbl)
+    tot <- nrow(qtbl)
     q <- data.table(id = tot + 1L,
                      question = x[1],
                      tags = tags,
-                     time_created = Sys.time())
-    q_tbl <<- rbindlist(list(q_tbl, q))
-    sol_tbl[[1]][tot + 1] <<- tot + 1L
-    sol_tbl[[2]][[tot + 1]] <<- x[-1]
+                     timecreated = Sys.time())
+    qtbl <<- rbindlist(list(qtbl, q))
+    soltbl[[1]][tot + 1] <<- tot + 1L
+    soltbl[[2]][[tot + 1]] <<- x[-1]
 }
 
 #' Show a question from the Q&A repository
@@ -65,11 +76,12 @@ addq <- function(tags = c("")) {
 #' 
 #' @export
 ask <- function() {
-    if(nrow(q_tbl) == 0) {
+    if(nrow(qtbl) == 0) {
         cat("no questions exist yet \nplease use addq() to add questions\n")
     } else {
-    q_id <<- sample(1:nrow(q_tbl), 1)
-    question <- q_tbl[q_id, 2]
+    qid <<- sample(1:nrow(qtbl), 1)
+    timeasked <<- Sys.time()
+    question <- qtbl[qid, 2]
     cat(paste(question, "\n"))
     }
 }
@@ -85,14 +97,47 @@ ask <- function() {
 #' 
 #' @export
 tell <- function() {
-    if(nrow(q_tbl) == 0) {
+    if(nrow(qtbl) == 0) {
         cat("no questions exist yet \nplease use addq() to add questions\n")
     } else {
-    answer <- sol_tbl[[2]][[q_id]]
+    answer <- soltbl[[2]][[qid]]
     for(i in seq_along(answer)) {
         cat(paste(answer[i],"\n"))
     }
     }
+}
+
+#' Correct answer response
+#' 
+#' This will log data about correct response
+#' 
+#' @return does not return anything, just updates the datalog
+#' 
+#' @examples
+#' \dontrun{done()}
+#' 
+#' @export
+hit <- function() {
+    last <- list(id = qid,
+                 time = timeasked,
+                 dt = as.double(Sys.time() - timeasked),
+                 response = "yes")
+    testlog <<- rbindlist(list(testlog, last))
+}
+
+#' Wrong answer response
+#' 
+#' This will log data about correct response
+#' 
+#' @return does not return anything, just updates the datalog
+#' 
+#' @export
+miss <- function() {
+    last <- list(id = qid,
+                 time = timeasked,
+                 dt = as.double(Sys.time() - timeasked),
+                 response = "no")
+    testlog <<- rbindlist(list(testlog, last))
 }
 
 #' Closes the quiz session
