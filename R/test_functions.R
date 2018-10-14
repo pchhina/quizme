@@ -1,13 +1,14 @@
-utils::globalVariables(c("q_tbl", "sol_tbl", "data_tbl", "q_id", "<<-"), add = TRUE)
+utils::globalVariables(c("qtbl", "soltbl", "testlog", "ranktbl", "<<-"), add = TRUE)
+
 #' Load quiz data into R environment
 #' 
 #' If using for the first time, creates .quizme directory in users home directory for data storage. Also creates empty objects for storing question/answer data.
 #' 
 #' @return three objects: q_tbl, sol_tbl and data_tbl containing questions, answers and metadata
 #' 
-#' @importFrom data.table data.table fread rbindlist
+#' @importFrom data.table data.table rbindlist
 #' @importFrom readr read_rds
-#' @importFrom lubridate duration
+#' @importFrom lubridate as.duration
 #' 
 #' @examples
 #' \dontrun{make_quiz()}
@@ -29,16 +30,19 @@ quizme <- function() {
                                response = factor(levels = c("Y", "N")))
     ranktbl <<- data.table(id = integer(0),
                            due = as.POSIXct(character(0)),
-                           status = factor(levels = c("new",
-                                                      "learning",
+                           status = factor(levels = c("learning",
+                                                      "new",
                                                       "learned",
-                                                      "mastered")),
+                                                      "mastered"),
+                                           ordered = TRUE),
                            rank = integer(0)
                            )
     } else {
         data_obj <- read_rds("~/.quizme/quizdata")
-        q_tbl <<- data_obj[[1]] 
-        sol_tbl <<- data_obj[[2]] 
+        qtbl <<- data_obj[[1]] 
+        soltbl <<- data_obj[[2]] 
+        testlog <<- data_obj[[3]] 
+        ranktbl <<- data_obj[[4]] 
     }
 }
 
@@ -48,7 +52,8 @@ quizme <- function() {
 #' 
 #' @return three objects: q_tbl, sol_tbl and data_tbl updated with the new question-answer.
 #' 
-#' importFrom lubridate now
+#' @importFrom lubridate now update
+#' @importFrom data.table rbindlist
 #' 
 #' @examples
 #' \dontrun{addq()}
@@ -74,6 +79,8 @@ addq <- function(tags = c("")) {
 
 #' Add question to ranking table
 #' 
+#' @importFrom data.table rbindlist
+#' 
 #' @return updated rankingtbl
 #' 
 addToRankingTbl <- function(time) {
@@ -82,11 +89,14 @@ addToRankingTbl <- function(time) {
                      status = "new",
                      rank = max(1, ranktbl[, max(rank)] + 1, 1))
     ranktbl <<- rbindlist(list(ranktbl, r))
+    updateranktbl()
 }
 
 #' Show a question from the Q&A repository
 #' 
 #' A randomly selected question will be shown. For R questions, you can simply enter your answer (code) at the R console directly. Answers are not evaluated by the package. This is up to the user to decide whether they answered the question correctly or not.
+#' 
+#' @importFrom lubridate now update
 #' 
 #' @return randomly selected question
 #' 
@@ -131,6 +141,8 @@ tell <- function() {
 #' 
 #' This will log data about correct response
 #' 
+#' @importFrom lubridate now as.duration today date
+#' 
 #' @return does not return anything, just updates the datalog
 #' 
 #' @examples
@@ -147,6 +159,11 @@ hit <- function() {
     updateranktbl()
 }
 
+
+#' update time
+#' 
+#' @importFrom lubridate update today date
+#'
 updatetime <- function() {
     ncor <- testlog[id == qid &
                     date(time) == today() &
@@ -162,15 +179,54 @@ updatetime <- function() {
                         ranktbl[id == qid, status := "learning"]
                     }
                 } else {
-                    t = 24
+                    tlast <- days_elapsed(qid = qid)
+                    t <- t_learning(tlast = tlast, qid = qid)
                 }
     newdew <- update(ranktbl[id == qid, due],  hour = t)
     ranktbl[id == qid, due := newdew] # add t hours to current time
 }
+
+#' Number of days elapsed
+#' 
+#' Finds number of days elapsed between the last two askings of qid
+#' 
+#' @importFrom lubridate update today date
+#'
+days_elapsed <- function(qid) {
+    timevec <- testlog[id == qid, time]
+    t2 <- timevec[length(timevec)]
+    t1 <- timevec[length(timevec) - 1]
+    day(t2) - day(t1)
+}
+
+#' Number of days elapsed
+#' 
+#' Finds number of hours elapsed between the last two askings of qid
+#' Finds new time(hours) to update for learning questions given tlast and qid
+#' This will be called in by updatetime()
+#' 
+#' @importFrom lubridate as.duration
+#'
+t_learning <- function(tlast, qid) {
+    dtvec <- testlog[id == qid, dt]
+    dtlast <- dtvec[length(dtvec)]
+    if (dtlast < as.duration(30)) {
+        t <- tlast + 3
+    } else if (dtlast < as.duration(120)) {
+        t <- tlast + 2
+    } else {
+        t <- tlast + 1
+    }
+    t * 24 # to convert into hours which is what updatetime needs
+}
+
 #' Wrong answer response
 #' 
 #' This will log data about correct response
 #' 
+#' @importFrom lubridate as.duration now
+#' @importFrom data.table rbindlist
+#'
 #' @return does not return anything, just updates the datalog
 #' 
 #' @export
@@ -205,8 +261,5 @@ updateranktbl <- function() {
 #' 
 #' @export
 bye <- function() {
-    write_rds(list(q_tbl, sol_tbl, data_tbl), "~/.quizme/quizdata")
-    vars <- c("q_tbl", "sol_tbl", "data_tbl", "q_id", "make_quiz",
-              "addq", "ask", "tell")
-    rm(list = vars, pos = ".GlobalEnv")
+    write_rds(list(qtbl, soltbl, testlog, ranktbl), "~/.quizme/quizdata")
 }
