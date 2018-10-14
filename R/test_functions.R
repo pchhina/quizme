@@ -7,6 +7,7 @@ utils::globalVariables(c("q_tbl", "sol_tbl", "data_tbl", "q_id", "<<-"), add = T
 #' 
 #' @importFrom data.table data.table fread rbindlist
 #' @importFrom readr read_rds
+#' @importFrom lubridate duration
 #' 
 #' @examples
 #' \dontrun{make_quiz()}
@@ -20,14 +21,14 @@ quizme <- function() {
     qtbl <<- data.table(id = integer(0),
                 question = character(0),
                 tags = character(0),
-                timecreated = .POSIXct(character(0)))
+                timecreated = as.POSIXct(character(0)))
     soltbl <<- list(id = integer(0), answer = list())
     testlog <<- data.table(id = integer(0),
                                time = .POSIXct(character(0)),
-                               dt = double(0),
+                               dt = as.duration(double(0)),
                                response = factor(levels = c("Y", "N")))
     ranktbl <<- data.table(id = integer(0),
-                           due = .POSIXct(character(0)),
+                           due = as.POSIXct(character(0)),
                            status = factor(levels = c("new",
                                                       "learning",
                                                       "learned",
@@ -47,6 +48,8 @@ quizme <- function() {
 #' 
 #' @return three objects: q_tbl, sol_tbl and data_tbl updated with the new question-answer.
 #' 
+#' importFrom lubridate now
+#' 
 #' @examples
 #' \dontrun{addq()}
 #' 
@@ -54,25 +57,30 @@ quizme <- function() {
 addq <- function(tags = c("")) {
     x <- scan(what = character(), sep = "\n")
     tot <- nrow(qtbl)
+    timecreated = now()
     q <- data.table(id = tot + 1L,
                      question = x[1],
                      tags = tags,
-                     timecreated = Sys.time())
+                     timecreated = timecreated)
     qtbl <<- rbindlist(list(qtbl, q))
     soltbl[[1]][tot + 1] <<- tot + 1L
     soltbl[[2]][[tot + 1]] <<- x[-1]
-    addToRankingTbl()
+    time_midnight <- update(timecreated,
+                            hour = 0,
+                            minute = 0,
+                            second = 0)
+    addToRankingTbl(time = time_midnight)
 }
 
 #' Add question to ranking table
 #' 
 #' @return updated rankingtbl
 #' 
-addToRankingTbl <- function() {
+addToRankingTbl <- function(time) {
     r <- data.table(id = qtbl[id == max(id), id],
-                     due = Sys.time(),
+                     due = time,
                      status = "new",
-                     rank = nrow(ranktbl) + 1)
+                     rank = max(1, ranktbl[, max(rank)] + 1, 1))
     ranktbl <<- rbindlist(list(ranktbl, r))
 }
 
@@ -91,8 +99,8 @@ ask <- function() {
     if(nrow(qtbl) == 0) {
         cat("no questions exist yet \nplease use addq() to add questions\n")
     } else {
-    qid <<- sample(1:nrow(qtbl), 1)
-    timeasked <<- Sys.time()
+    qid <<- ranktbl[1, id]
+    timeasked <<- now()
     question <- qtbl[qid, 2]
     cat(paste(question, "\n"))
     }
@@ -132,11 +140,33 @@ tell <- function() {
 hit <- function() {
     last <- list(id = qid,
                  time = timeasked,
-                 dt = as.double(Sys.time() - timeasked),
+                 dt = round(as.duration(now() - timeasked)),
                  response = "yes")
     testlog <<- rbindlist(list(testlog, last))
+    updatetime()
+    updateranktbl()
 }
 
+updatetime <- function() {
+    ncor <- testlog[id == qid &
+                    date(time) == today() &
+                    response == "yes", .N]
+                if (ranktbl[id == qid, status] == "new") {
+                    if (ncor <= 1) {
+                        t = 0
+                        updaterank()
+                    } else if (ncor == 2) {
+                        t =  2
+                    } else {
+                        t =  24
+                        ranktbl[id == qid, status := "learning"]
+                    }
+                } else {
+                    t = 24
+                }
+    newdew <- update(ranktbl[id == qid, due],  hour = t)
+    ranktbl[id == qid, due := newdew] # add t hours to current time
+}
 #' Wrong answer response
 #' 
 #' This will log data about correct response
@@ -147,11 +177,21 @@ hit <- function() {
 miss <- function() {
     last <- list(id = qid,
                  time = timeasked,
-                 dt = as.double(Sys.time() - timeasked),
+                 dt = round(as.duration(now() - timeasked)),
                  response = "no")
     testlog <<- rbindlist(list(testlog, last))
+    updaterank()
+    updateranktbl()
 }
 
+updaterank <- function() {
+    maxrank <- ranktbl[, max(rank)]
+    ranktbl[id == qid, rank := maxrank + 1]
+}
+
+updateranktbl <- function() {
+    ranktbl <<- ranktbl[order(due, status, rank)]
+}
 #' Closes the quiz session
 #' 
 #' This is important as it updates the files on disk with any new questions added in current session. After updating the qa file, it clears out the R environment by removing the objects and functions related to this package.
