@@ -4,7 +4,7 @@
 \alias{addq}
 \title{Add question-answer}
 \usage{
-addq()
+addq(tags = c(""))
 }
 \value{
 three objects: q_tbl, sol_tbl and data_tbl updated with the new question-answer.

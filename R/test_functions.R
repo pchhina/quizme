@@ -52,7 +52,7 @@ quizme <- function() {
 #' 
 #' @return three objects: q_tbl, sol_tbl and data_tbl updated with the new question-answer.
 #' 
-#' @importFrom lubridate now update
+#' @importFrom lubridate now hour minute second
 #' @importFrom data.table rbindlist
 #' 
 #' @examples
@@ -70,10 +70,10 @@ addq <- function(tags = c("")) {
     qtbl <<- rbindlist(list(qtbl, q))
     soltbl[[1]][tot + 1] <<- tot + 1L
     soltbl[[2]][[tot + 1]] <<- x[-1]
-    time_midnight <- update(timecreated,
-                            hour = 0,
-                            minute = 0,
-                            second = 0)
+    time_midnight <- timecreated
+    hour(time_midnight) <- 0
+    minute(time_midnight) <- 0
+    second(time_midnight) <- 0
     addToRankingTbl(time = time_midnight)
 }
 
@@ -96,7 +96,7 @@ addToRankingTbl <- function(time) {
 #' 
 #' A randomly selected question will be shown. For R questions, you can simply enter your answer (code) at the R console directly. Answers are not evaluated by the package. This is up to the user to decide whether they answered the question correctly or not.
 #' 
-#' @importFrom lubridate now update
+#' @importFrom lubridate now
 #' 
 #' @return randomly selected question
 #' 
@@ -141,7 +141,7 @@ tell <- function() {
 #' 
 #' This will log data about correct response
 #' 
-#' @importFrom lubridate now as.duration today date
+#' @importFrom lubridate now as.duration 
 #' 
 #' @return does not return anything, just updates the datalog
 #' 
@@ -162,7 +162,7 @@ hit <- function() {
 
 #' update time
 #' 
-#' @importFrom lubridate update today date
+#' @importFrom lubridate today date
 #'
 updatetime <- function() {
     ncor <- testlog[id == qid &
@@ -182,7 +182,8 @@ updatetime <- function() {
                     tlast <- days_elapsed(qid = qid)
                     t <- t_learning(tlast = tlast, qid = qid)
                 }
-    newdew <- update(ranktbl[id == qid, due],  hour = t)
+    newdew <- ranktbl[id == qid, due]
+    hour(newdew)  <- t
     ranktbl[id == qid, due := newdew] # add t hours to current time
 }
 
@@ -190,7 +191,7 @@ updatetime <- function() {
 #' 
 #' Finds number of days elapsed between the last two askings of qid
 #' 
-#' @importFrom lubridate update today date
+#' @importFrom lubridate day
 #'
 days_elapsed <- function(qid) {
     timevec <- testlog[id == qid, time]

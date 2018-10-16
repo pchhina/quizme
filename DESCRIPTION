@@ -5,7 +5,7 @@ Author: person("Paramjot", "Singh", email = "param.chhina@gmail.com", role = c("
 Maintainer: Paramjot Singh <param.chhina@gmail.com>
 Description: Set of functions that can be run in the R console to create and practice your own test questions. The inputs are simple text, so can be used to practice anything you want to learn!
 Depends: R (>= 3.4.3)
-Imports: dplyr, readr, tibble, knitr
+Imports: knitr, data.table, lubridate, readr
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
