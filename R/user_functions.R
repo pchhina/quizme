@@ -15,6 +15,7 @@ utils::globalVariables(c("qtbl", "soltbl", "testlog", "ranktbl", "<<-"), add = T
 #' 
 #' @export
 quizme <- function() {
+    suppressMessages(library(lubridate))
     if(!dir.exists("~/.quizme")) {
         dir.create("~/.quizme")
     }
@@ -179,4 +180,5 @@ miss <- function() {
 #' @export
 bye <- function() {
     write_rds(list(qtbl, soltbl, testlog, ranktbl), "~/.quizme/quizdata")
+    detach(lubridate)
 }
