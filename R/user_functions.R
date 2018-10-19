@@ -77,21 +77,6 @@ addq <- function(tags = c("")) {
     addToRankingTbl(time = time_midnight)
 }
 
-#' Add question to ranking table
-#' 
-#' @importFrom data.table rbindlist
-#' 
-#' @return updated rankingtbl
-#' 
-addToRankingTbl <- function(time) {
-    r <- data.table(id = qtbl[id == max(id), id],
-                     due = time,
-                     status = "new",
-                     rank = max(1, ranktbl[, max(rank)] + 1, 1))
-    ranktbl <<- rbindlist(list(ranktbl, r))
-    updateranktbl()
-}
-
 #' Show a question from the Q&A repository
 #' 
 #' A randomly selected question will be shown. For R questions, you can simply enter your answer (code) at the R console directly. Answers are not evaluated by the package. This is up to the user to decide whether they answered the question correctly or not.
@@ -160,67 +145,6 @@ hit <- function() {
 }
 
 
-#' update time
-#' 
-#' @importFrom lubridate today date
-#'
-updatetime <- function() {
-    ncor <- testlog[id == qid &
-                    date(time) == today() &
-                    response == "yes", .N]
-                if (ranktbl[id == qid, status] == "new") {
-                    if (ncor <= 1) {
-                        t = 0
-                        updaterank()
-                    } else if (ncor == 2) {
-                        t =  2
-                    } else {
-                        t =  24
-                        ranktbl[id == qid, status := "learning"]
-                    }
-                } else {
-                    tlast <- days_elapsed(qid = qid)
-                    t <- t_learning(tlast = tlast, qid = qid)
-                }
-    newdew <- ranktbl[id == qid, due]
-    hour(newdew)  <- t
-    ranktbl[id == qid, due := newdew] # add t hours to current time
-}
-
-#' Number of days elapsed
-#' 
-#' Finds number of days elapsed between the last two askings of qid
-#' 
-#' @importFrom lubridate day
-#'
-days_elapsed <- function(qid) {
-    timevec <- testlog[id == qid, time]
-    t2 <- timevec[length(timevec)]
-    t1 <- timevec[length(timevec) - 1]
-    day(t2) - day(t1)
-}
-
-#' Number of days elapsed
-#' 
-#' Finds number of hours elapsed between the last two askings of qid
-#' Finds new time(hours) to update for learning questions given tlast and qid
-#' This will be called in by updatetime()
-#' 
-#' @importFrom lubridate as.duration
-#'
-t_learning <- function(tlast, qid) {
-    dtvec <- testlog[id == qid, dt]
-    dtlast <- dtvec[length(dtvec)]
-    if (dtlast < as.duration(30)) {
-        t <- tlast + 3
-    } else if (dtlast < as.duration(120)) {
-        t <- tlast + 2
-    } else {
-        t <- tlast + 1
-    }
-    t * 24 # to convert into hours which is what updatetime needs
-}
-
 #' Wrong answer response
 #' 
 #' This will log data about correct response
@@ -241,14 +165,6 @@ miss <- function() {
     updateranktbl()
 }
 
-updaterank <- function() {
-    maxrank <- ranktbl[, max(rank)]
-    ranktbl[id == qid, rank := maxrank + 1]
-}
-
-updateranktbl <- function() {
-    ranktbl <<- ranktbl[order(due, status, rank)]
-}
 #' Closes the quiz session
 #' 
 #' This is important as it updates the files on disk with any new questions added in current session. After updating the qa file, it clears out the R environment by removing the objects and functions related to this package.
