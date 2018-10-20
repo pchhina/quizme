@@ -40,6 +40,7 @@ updatetime <- function() {
     newdew <- ranktbl[id == qid, due]
     hour(newdew)  <- t
     ranktbl[id == qid, due := newdew] # add t hours to current time
+    updateranktbl()
 }
 
 #' Number of days elapsed
@@ -76,11 +77,28 @@ t_learning <- function(tlast, qid) {
     t * 24 # to convert into hours which is what updatetime needs
 }
 
+# this is called on a missed question
+# missed question is assigned the largest rank
+# so it goes at the bottom within the same subgroup
 updaterank <- function() {
     maxrank <- ranktbl[, max(rank)]
     ranktbl[id == qid, rank := maxrank + 1]
+    updateranktbl()
 }
 
+# this functions shuffle rankings within a subgroup
+# this is done to change the order in which the questins are asked in the later session
+# this will be called in a call to bye
+shuffleWithinGroup <- function() {
+    ranktbl[, rank := as.double(sample(.N)), by = .(due, status)]
+    # here the type at LHS and RHS of := must match 
+    # i am coercing RHS to double
+    # but may be it is better to coerce rank as ingeger?
+    updateranktbl()
+}
+
+# this reorders the ranking table if anything changes in the rankingtbl
+# this includes almost all calls - addq, shuffleWithinGroup, 
 updateranktbl <- function() {
     ranktbl <<- ranktbl[order(due, status, rank)]
 }

@@ -6,6 +6,9 @@
 \usage{
 addq(tags = c(""))
 }
+\arguments{
+\item{tags}{an optional string containing tags to classify question into a category(s)}
+}
 \value{
 three objects: q_tbl, sol_tbl and data_tbl updated with the new question-answer.
 }

@@ -11,7 +11,7 @@ utils::globalVariables(c("qtbl", "soltbl", "testlog", "ranktbl", "<<-"), add = T
 #' @importFrom lubridate as.duration
 #' 
 #' @examples
-#' \dontrun{make_quiz()}
+#' \dontrun{quizme()}
 #' 
 #' @export
 quizme <- function() {
@@ -50,6 +50,8 @@ quizme <- function() {
 #' Add question-answer
 #' 
 #' Add question in one line (without carriage return). Add answers in the following line(s). Carriage return in a blank line will save the question and answer to the data objects.
+#' 
+#' @param tags an optional string containing tags to classify question into a category(s)
 #' 
 #' @return three objects: q_tbl, sol_tbl and data_tbl updated with the new question-answer.
 #' 
@@ -142,7 +144,6 @@ hit <- function() {
                  response = "yes")
     testlog <<- rbindlist(list(testlog, last))
     updatetime()
-    updateranktbl()
 }
 
 
@@ -163,7 +164,6 @@ miss <- function() {
                  response = "no")
     testlog <<- rbindlist(list(testlog, last))
     updaterank()
-    updateranktbl()
 }
 
 #' Closes the quiz session
@@ -179,6 +179,7 @@ miss <- function() {
 #' 
 #' @export
 bye <- function() {
+    shuffleWithinGroup()
     write_rds(list(qtbl, soltbl, testlog, ranktbl), "~/.quizme/quizdata")
     detach(lubridate)
 }
