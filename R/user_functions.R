@@ -181,5 +181,5 @@ miss <- function() {
 bye <- function() {
     shuffleWithinGroup()
     write_rds(list(qtbl, soltbl, testlog, ranktbl), "~/.quizme/quizdata")
-    detach(lubridate)
+    detach(package:lubridate)
 }
