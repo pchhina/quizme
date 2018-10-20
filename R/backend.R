@@ -20,10 +20,9 @@ addToRankingTbl <- function(time) {
 #' @importFrom lubridate today date
 #'
 updatetime <- function() {
-    ncor <- testlog[id == qid &
-                    date(time) == today() &
-                    response == "yes", .N]
                 if (ranktbl[id == qid, status] == "new") {
+                ncor <- testlog[id == qid &
+                    response == "yes", .N]
                     if (ncor <= 1) {
                         t = 0
                         updaterank()
