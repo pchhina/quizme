@@ -45,6 +45,11 @@ quizme <- function() {
         testlog <<- data_obj[[3]] 
         ranktbl <<- data_obj[[4]] 
     }
+    if(nrow(ranktbl)!= 0) {
+        testdue <<- ranktbl[1, due] # for subsetting session, see ask()
+    } else {
+        testdue <<- today()
+    }
 }
 
 #' Add question-answer
@@ -96,7 +101,7 @@ addq <- function(tags = c("")) {
 ask <- function() {
     if(nrow(qtbl) == 0) {
         cat("no questions exist yet \nplease use addq() to add questions\n")
-    } else if(nrow(ranktbl[due <= today()]) == 0) {
+    } else if(nrow(ranktbl[due <= testdue]) == 0) {
         cat("Finished Quiz!!! \nPlease come back at a later time to practice more.\n")
     } else {
     qid <<- ranktbl[1, id]
