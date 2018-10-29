@@ -190,3 +190,19 @@ bye <- function() {
     write_rds(list(qtbl, soltbl, testlog, ranktbl), "~/.quizme/quizdata")
     detach(package:lubridate)
 }
+
+#' Change question-answer
+#' 
+#' Change/replace the current question. First line will be the questio. Add answers in the following line(s). Carriage return in a blank line will save the question and answer to the data objects.
+#' 
+#' @return two objects: q_tbl and sol_tbl updated with the new question-answer.
+#' 
+#' @examples
+#' \dontrun{changeq()}
+#' 
+#' @export
+changeq <- function() {
+    x <- scan(what = character(), sep = "\n")
+    qtbl[id == qid, question := x[1]]
+    soltbl[[2]][[qid]] <<- x[-1]
+}
