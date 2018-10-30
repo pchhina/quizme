@@ -206,3 +206,18 @@ changeq <- function() {
     qtbl[id == qid, question := x[1]]
     soltbl[[2]][[qid]] <<- x[-1]
 }
+
+#' Test session status
+#' 
+#' Reports number of questions remaining
+#' 
+#' @return number of questions remaining
+#' 
+#' @examples
+#' \dontrun{show_status()}
+#' 
+#' @export
+show_status <- function() {
+    remaining <- ranktbl[due == testdue, .N]    
+    cat(paste(remaining, 'more to go...\nKeep going!\n'))
+}
