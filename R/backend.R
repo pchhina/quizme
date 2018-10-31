@@ -17,7 +17,7 @@ addToRankingTbl <- function(time) {
 
 #' update time
 #' 
-#' @importFrom lubridate today date
+#' @importFrom lubridate today date now
 #'
 updatetime <- function() {
                 if (ranktbl[id == qid, status] == "new") {
@@ -27,7 +27,7 @@ updatetime <- function() {
                         t = 0
                         updaterank()
                     } else if (ncor == 2) {
-                        t =  2
+                        t =  hour(now()) + 4
                     } else {
                         t =  24
                         ranktbl[id == qid, status := "learning"]

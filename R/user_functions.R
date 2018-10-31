@@ -8,7 +8,7 @@ utils::globalVariables(c("qtbl", "soltbl", "testlog", "ranktbl", "<<-"), add = T
 #' 
 #' @importFrom data.table data.table rbindlist
 #' @importFrom readr read_rds
-#' @importFrom lubridate as.duration
+#' @importFrom lubridate as.duration now
 #' 
 #' @examples
 #' \dontrun{quizme()}
@@ -45,11 +45,7 @@ quizme <- function() {
         testlog <<- data_obj[[3]] 
         ranktbl <<- data_obj[[4]] 
     }
-    if(nrow(ranktbl)!= 0) {
-        testdue <<- ranktbl[1, due] # for subsetting session, see ask()
-    } else {
-        testdue <<- today()
-    }
+    testdue <<- now()
 }
 
 #' Add question-answer
@@ -218,6 +214,6 @@ changeq <- function() {
 #' 
 #' @export
 show_status <- function() {
-    remaining <- ranktbl[due == testdue, .N]    
+    remaining <- ranktbl[due <= testdue, .N]    
     cat(paste(remaining, 'more to go...\nKeep going!\n'))
 }
