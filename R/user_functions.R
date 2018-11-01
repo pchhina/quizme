@@ -8,7 +8,7 @@ utils::globalVariables(c("qtbl", "soltbl", "testlog", "ranktbl", "<<-"), add = T
 #' 
 #' @importFrom data.table data.table rbindlist
 #' @importFrom readr read_rds
-#' @importFrom lubridate as.duration now
+#' @importFrom lubridate as.duration
 #' 
 #' @examples
 #' \dontrun{quizme()}
@@ -45,7 +45,6 @@ quizme <- function() {
         testlog <<- data_obj[[3]] 
         ranktbl <<- data_obj[[4]] 
     }
-    testdue <<- now()
 }
 
 #' Add question-answer
@@ -97,10 +96,10 @@ addq <- function(tags = c("")) {
 ask <- function() {
     if(nrow(qtbl) == 0) {
         cat("no questions exist yet \nplease use addq() to add questions\n")
-    } else if(nrow(ranktbl[due <= testdue]) == 0) {
+    } else if(nrow(ranktbl[due <= now()]) == 0) {
         cat("Finished Quiz!!! \nPlease come back at a later time to practice more.\n")
     } else {
-    qid <<- ranktbl[1, id]
+    qid <<- sample(ranktbl[due <= now(), id], 1) #subsets the id as vector for due questions and randomly picks one
     timeasked <<- now()
     question <- qtbl[qid, 2]
     cat(paste(question, "\n"))
@@ -214,6 +213,6 @@ changeq <- function() {
 #' 
 #' @export
 show_status <- function() {
-    remaining <- ranktbl[due <= testdue, .N]    
+    remaining <- ranktbl[due <= now(), .N]    
     cat(paste(remaining, 'more to go...\nKeep going!\n'))
 }
