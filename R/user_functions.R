@@ -80,9 +80,9 @@ addq <- function(tags = c("")) {
     addToRankingTbl(time = time_midnight)
 }
 
-#' Show a question from the Q&A repository
+#' Show a question from the Q&A test 
 #' 
-#' A randomly selected question will be shown. For R questions, you can simply enter your answer (code) at the R console directly. Answers are not evaluated by the package. This is up to the user to decide whether they answered the question correctly or not.
+#' A test set will be generated at the start of each test session. This will include all questions due or past due. A randomly selected question will be shown from this set but preference will be given to 'learning' questions first followed by 'new' questions. For R questions, you can simply enter your answer (code) at the R console directly. Answers are not evaluated by the package. This is up to the user to decide whether they answered the question correctly or not.
 #' 
 #' @importFrom lubridate now
 #' 
@@ -99,10 +99,13 @@ ask <- function() {
     } else if(nrow(ranktbl[due <= now()]) == 0) {
         cat("Finished Quiz!!! \nPlease come back at a later time to practice more.\n")
     } else {
-    qid <<- sample(ranktbl[due <= now(), id], 1) #subsets the id as vector for due questions and randomly picks one
-    timeasked <<- now()
-    question <- qtbl[qid, 2]
-    cat(paste(question, "\n"))
+        id_vec_learning <- sample(ranktbl[due <= now() & status == "learning", id])
+        id_vec_new <- sample(ranktbl[due <= now() & status == "new", id])
+        test_ids <- c(id_vec_learning, id_vec_new)
+        qid <<- test_ids[1]
+        timeasked <<- now()
+        question <- qtbl[qid, 2]
+        cat(paste(question, "\n"))
     }
 }
 

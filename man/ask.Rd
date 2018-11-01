@@ -2,7 +2,7 @@
 % Please edit documentation in R/user_functions.R
 \name{ask}
 \alias{ask}
-\title{Show a question from the Q&A repository}
+\title{Show a question from the Q&A test}
 \usage{
 ask()
 }
@@ -10,7 +10,7 @@ ask()
 randomly selected question
 }
 \description{
-A randomly selected question will be shown. For R questions, you can simply enter your answer (code) at the R console directly. Answers are not evaluated by the package. This is up to the user to decide whether they answered the question correctly or not.
+A test set will be generated at the start of each test session. This will include all questions due or past due. A randomly selected question will be shown from this set but preference will be given to 'learning' questions first followed by 'new' questions. For R questions, you can simply enter your answer (code) at the R console directly. Answers are not evaluated by the package. This is up to the user to decide whether they answered the question correctly or not.
 }
 \examples{
 \dontrun{ask()}
