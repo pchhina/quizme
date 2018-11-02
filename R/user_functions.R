@@ -99,9 +99,17 @@ ask <- function() {
     } else if(nrow(ranktbl[due <= now()]) == 0) {
         cat("Finished Quiz!!! \nPlease come back at a later time to practice more.\n")
     } else {
-        id_vec_learning <- sample(ranktbl[due <= now() & status == "learning", id])
-        id_vec_new <- sample(ranktbl[due <= now() & status == "new", id])
-        test_ids <- c(id_vec_learning, id_vec_new)
+        ids_learning <- ranktbl[due <= now() &
+                                status == "learning", id]
+        ids_new <- ranktbl[due <= now() &
+                           status == "new", id]
+		ids_learning_v <- ifelse(length(ids_learning) > 1,
+                                 sample(ids_learning),
+                                 ids_learning)
+		ids_new_v <- ifelse(length(ids_new) > 1,
+                            sample(ids_new),
+                            ids_new)
+        test_ids <- c(ids_learning_v, ids_new_v)
         qid <<- test_ids[1]
         timeasked <<- now()
         question <- qtbl[qid, 2]
