@@ -46,13 +46,14 @@ updatetime <- function() {
 #' 
 #' Finds number of days elapsed between the last two askings of qid
 #' 
-#' @importFrom lubridate day
+#' @importFrom lubridate day interval
 #'
 days_elapsed <- function(qid) {
     timevec <- testlog[id == qid, time]
     t2 <- timevec[length(timevec)]
     t1 <- timevec[length(timevec) - 1]
-    day(t2) - day(t1)
+    int_t1t2 <- interval(t1, t2)
+    round(as.numeric(int_t1t2)/(60*60*24))
 }
 
 #' Number of days elapsed
