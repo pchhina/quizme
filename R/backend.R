@@ -24,12 +24,12 @@ updatetime <- function() {
                 ncor <- testlog[id == qid &
                     response == "yes", .N]
                     if (ncor <= 1) {
-                        t = 0
+                        t <- 0
                         updaterank()
                     } else if (ncor == 2) {
-                        t =  hour(now()) + 4
+                        t <- hour(now()) + 4
                     } else {
-                        t =  24
+                        t <- 24
                         ranktbl[id == qid, status := "learning"]
                     }
                 } else {
