@@ -44,6 +44,7 @@ quizme <- function() {
         soltbl <<- data_obj[[2]] 
         testlog <<- data_obj[[3]] 
         ranktbl <<- data_obj[[4]] 
+        mvPastdueToToday(ranktbl)
     }
 }
 

@@ -102,3 +102,15 @@ shuffleWithinGroup <- function() {
 updateranktbl <- function() {
     ranktbl <<- ranktbl[order(due, status, rank)]
 }
+
+# this function update the due date of past due questions to today
+# this is needed for new questions that are many days past due
+# so that if they are practiced today, they are updated to learning tomorrow
+# and not some day in the past
+mvPastdueToToday <- function(DT) {
+    nowt  <- now()
+    hour(nowt)  <- 0
+    minute(nowt)  <- 0
+    second(nowt)  <- 0
+    DT[due < today(), due := nowt]
+}
