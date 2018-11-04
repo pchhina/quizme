@@ -31,6 +31,7 @@ updatetime <- function() {
                     } else {
                         t <- 24
                         ranktbl[id == qid, status := "learning"]
+                        new2learn <<- new2learn + 1
                     }
                 } else {
                     tlast <- days_elapsed(qid = qid)
@@ -86,6 +87,7 @@ updaterank <- function() {
     updateranktbl()
 }
 
+# NOTE: this is obsolete now that ask is sampling the test group
 # this functions shuffle rankings within a subgroup
 # this is done to change the order in which the questins are asked in the later session
 # this will be called in a call to bye
@@ -119,4 +121,101 @@ mvPastdueToToday <- function(DT) {
     minute(nowt)  <- 0
     second(nowt)  <- 0
     DT[due < today(), due := nowt]
+}
+
+startSession <- function() {
+    sid <- nrow(slog) + 1L
+    sdate <- today()
+    sstart <- now()
+    send <- now()
+    sdur <- round(as.numeric(interval(sstart, send)) / 60)
+    sallq <- 0L
+    snewq <- 0L
+    snew2learningq <- 0L
+    data.table(sid = sid,
+               sdate = sdate,
+               sstart = sstart,
+               sdur = sdur,
+               sallq = sallq,
+               snewq = snewq,
+               snew2learningq = snew2learningq)
+}
+
+endSession <- function() {
+    sstart <- slog[sid == nrow(slog), sstart]
+    send <- now()
+    sdur <- round(as.numeric(interval(sstart, send)) / 60)
+    slog[sid == nrow(slog), snew2learningq := new2learn]
+}
+
+newActive <- function() {
+    time_due <- ymd_h("2100-1-1 0", tz = "America/Chicago")
+    newq <- ranktbl[due < time_due & status == 'new', .N]
+    newq + new2learn
+}
+
+newParked <- function() {
+    time_due <- ymd_h("2100-1-1 0", tz = "America/Chicago")
+    ranktbl[due == time_due & status == 'new', .N]
+}
+
+newLearned <- function() {
+    slog[sdate == today(), sum(snew2learningq)]
+}
+
+newDelta <- function() {
+    min(c(5, newParked(), 6 - newActive() - newLearned()))
+}
+
+learningToday <- function() {
+    ranktbl[due < today() + 1, .N]
+}
+
+learningTomorrow <- function() {
+    ranktbl[due <= today() + 1, .N] - learningToday()
+}
+
+newMove <- function() {
+    np <- newParked()
+    nd <- newDelta()
+    tdy <- learningToday()
+    tmr <- learningTomorrow()
+    if(nd <= 0) {
+        cat("You are learning:\n\n")
+        cat(paste(newActive(), "new question(s)\n"))
+        cat(paste(tdy, "total question(s) today\n"))
+        cat(paste(tmr, "question(s) tomorrow\n\n"))
+        cat("if you wish to add more...\n")
+        input <- readline(prompt = "please enter number of questions to add (0 to exit): ")
+        ifelse(input == 0, return(cat("\n")), nd <- input)
+
+    }
+    if(np == 0) {
+        cat('\nthere are no new questions left in the repository\n')
+        cat('you may add questions to repository using addq() function\n')
+        return(cat('\n'))
+    }
+    if(np < nd) {
+        cat(paste("\nonly", np, "question(s) remaining in repository\n"))
+        cat(paste("adding", np, "question(s) to your test...\n"))
+        nd <- np
+    } else {
+        cat(paste("adding", nd, "question(s) to your test...\n"))
+    }
+    time_due <- ymd_h("2100-1-1 0", tz = "America/Chicago")
+    current_date <- now()
+    hour(current_date) <- 0
+    minute(current_date) <- 0
+    second(current_date) <- 0
+    qidnew <- ranktbl[due == time_due & status == "new", id]
+        if(length(qidnew) > 1) {
+            qidadd <- sample(qidnew, nd)
+        } else if(length(qidnew) == 1) {
+            qidadd <- qidnew
+        } else {
+            qidadd <- NULL
+        }
+    ranktbl[id %in% qidadd, due := current_date]
+    updateranktbl()
+    cat(paste(nd, "questions added to your test!\n"))
 }

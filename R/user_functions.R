@@ -1,4 +1,4 @@
-utils::globalVariables(c("qtbl", "soltbl", "testlog", "ranktbl", "<<-"), add = TRUE)
+utils::globalVariables(c("qtbl", "soltbl", "testlog", "ranktbl", "slog", "<<-"), add = TRUE)
 
 #' Load quiz data into R environment
 #' 
@@ -38,6 +38,17 @@ quizme <- function() {
                                            ordered = TRUE),
                            rank = integer(0)
                            )
+    
+    slog <<- data.table(sid = integer(0),
+                        sdate = as.Date(as.POSIXct(character(0))),
+                        sstart = as.POSIXct(character(0)),
+                        sdur = numeric(0),
+                        sallq = integer(0),
+                        snewq = integer(0),
+                        snew2learningq = integer(0)
+                        )
+    slog <<- rbindlist(list(slog, startSession()))
+
     } else {
         data_obj <- read_rds("~/.quizme/quizdata")
         qtbl <<- data_obj[[1]] 
@@ -45,7 +56,10 @@ quizme <- function() {
         testlog <<- data_obj[[3]] 
         ranktbl <<- data_obj[[4]] 
         mvPastdueToToday(ranktbl)
+        slog <<- data_obj[[5]]
+        slog <<- rbindlist(list(slog, startSession()))
     }
+    new2learn <<- 0L
 }
 
 #' Add question-answer
@@ -74,11 +88,8 @@ addq <- function(tags = c("")) {
     qtbl <<- rbindlist(list(qtbl, q))
     soltbl[[1]][tot + 1] <<- tot + 1L
     soltbl[[2]][[tot + 1]] <<- x[-1]
-    time_midnight <- timecreated
-    hour(time_midnight) <- 0
-    minute(time_midnight) <- 0
-    second(time_midnight) <- 0
-    addToRankingTbl(time = time_midnight)
+    time_due <- ymd_h("2100-1-1 0", tz = "America/Chicago")
+    addToRankingTbl(time = time_due)
 }
 
 #' Show a question from the Q&A test 
@@ -98,7 +109,8 @@ ask <- function() {
     if(nrow(qtbl) == 0) {
         cat("no questions exist yet \nplease use addq() to add questions\n")
     } else if(nrow(ranktbl[due <= now()]) == 0) {
-        cat("Finished Quiz!!! \nPlease come back at a later time to practice more.\n")
+        cat("Finished Quiz!!!\n\n")
+        newMove()
     } else {
         ids_learning <- ranktbl[due <= now() & status == "learning", id]
         ids_new <- ranktbl[due <= now() & status == "new", id]
@@ -199,8 +211,8 @@ miss <- function() {
 #' 
 #' @export
 bye <- function() {
-    shuffleWithinGroup()
-    write_rds(list(qtbl, soltbl, testlog, ranktbl), "~/.quizme/quizdata")
+    endSession()
+    write_rds(list(qtbl, soltbl, testlog, ranktbl, slog), "~/.quizme/quizdata")
     detach(package:lubridate)
 }
 
