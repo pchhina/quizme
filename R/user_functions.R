@@ -38,7 +38,6 @@ quizme <- function() {
                                            ordered = TRUE),
                            rank = integer(0)
                            )
-    
     slog <<- data.table(sid = integer(0),
                         sdate = as.Date(as.POSIXct(character(0))),
                         sstart = as.POSIXct(character(0)),
@@ -48,7 +47,6 @@ quizme <- function() {
                         snew2learningq = integer(0)
                         )
     slog <<- rbindlist(list(slog, startSession()))
-
     } else {
         data_obj <- read_rds("~/.quizme/quizdata")
         qtbl <<- data_obj[[1]] 
@@ -70,7 +68,7 @@ quizme <- function() {
 #' 
 #' @return three objects: q_tbl, sol_tbl and data_tbl updated with the new question-answer.
 #' 
-#' @importFrom lubridate now hour minute second
+#' @importFrom lubridate now hour minute second ymd_h
 #' @importFrom data.table rbindlist
 #' 
 #' @examples

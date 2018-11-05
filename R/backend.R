@@ -186,9 +186,12 @@ newMove <- function() {
         cat(paste(tdy, "total question(s) today\n"))
         cat(paste(tmr, "question(s) tomorrow\n\n"))
         cat("if you wish to add more...\n")
-        input <- readline(prompt = "please enter number of questions to add (0 to exit): ")
+        input <- as.integer(NA)
+        while(is.na(input)) {
+            input <- readline(prompt = "please enter number of questions to add (0 to exit): ")
+            suppressWarnings(input <- as.integer(input))
+        }
         ifelse(input == 0, return(cat("\n")), nd <- input)
-
     }
     if(np == 0) {
         cat('\nthere are no new questions left in the repository\n')
@@ -200,7 +203,7 @@ newMove <- function() {
         cat(paste("adding", np, "question(s) to your test...\n"))
         nd <- np
     } else {
-        cat(paste("adding", nd, "question(s) to your test...\n"))
+        cat(paste("\nadding", nd, "question(s) to your test...\n"))
     }
     time_due <- ymd_h("2100-1-1 0", tz = "America/Chicago")
     current_date <- now()
@@ -217,5 +220,5 @@ newMove <- function() {
         }
     ranktbl[id %in% qidadd, due := current_date]
     updateranktbl()
-    cat(paste(nd, "questions added to your test!\n"))
+    cat("Done!\n")
 }
