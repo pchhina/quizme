@@ -269,5 +269,5 @@ show_status <- function() {
 #' 
 #' @export
 week_ahead <- function() {
-    ranktbl[, due := as.Date(due)][due < Sys.Date() + 7, .N, by = due][, due := weekdays(due)][]
+    print(ranktbl[, due := as.Date(due)][due < Sys.Date() + 7, .N, by = due][, due := weekdays(due)][])
 }
