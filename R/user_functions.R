@@ -210,6 +210,7 @@ miss <- function() {
 #' @export
 bye <- function() {
     endSession()
+    show_status()
     write_rds(list(qtbl, soltbl, testlog, ranktbl, slog), "~/.quizme/quizdata")
     detach(package:lubridate)
 }
@@ -241,6 +242,32 @@ changeq <- function() {
 #' 
 #' @export
 show_status <- function() {
+    cat("\nTOTAL:")
+    print(table(ranktbl[, status]))
+    cat("TOPICS:")
+    print(table(substr(qtbl[, question], 1, 1)))
+    cat("\n")
+    cat("TOMORROW:")
+    cat(ranktbl[due < Sys.Date() + 2 & due >= Sys.Date() + 1, .N])
+    cat("\n\n")
+    cat("TODAY:")
+    cat(ranktbl[due < Sys.Date() + 1, .N])
+    print(table(droplevels(ranktbl[due < Sys.Date() + 1, status])))
+    cat("\n")
     remaining <- ranktbl[due <= now(), .N]    
     cat(paste(remaining, 'more to go...\nKeep going!\n'))
+}
+
+#' Due next 7 days
+#' 
+#' Reports number of questions due in the next 7 days
+#' 
+#' @return number of questions due in the next 7 days
+#' 
+#' @examples
+#' \dontrun{week_ahead()}
+#' 
+#' @export
+week_ahead <- function() {
+    ranktbl[, due := as.Date(due)][due < Sys.Date() + 7, .N, by = due][, due := weekdays(due)][]
 }

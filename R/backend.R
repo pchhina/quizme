@@ -176,6 +176,7 @@ learningTomorrow <- function() {
 }
 
 newMove <- function() {
+    show_status()
     np <- newParked()
     nd <- newDelta()
     tdy <- learningToday()
