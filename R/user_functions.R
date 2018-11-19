@@ -272,3 +272,20 @@ week_ahead <- function() {
     x <- ranktbl[due < Sys.Date() + 7]
     print(x[, due := as.Date(due)][, .N, by = due][, due := weekdays(due)][])
 }
+
+#' Delete last question
+#' 
+#' deletes the last added question to the database. 
+#' 
+#' @return updated rank table, question and answer tables
+#' 
+#' @examples
+#' \dontrun{delete_last()}
+#' 
+#' @export
+delete_last <- function() {
+    id <- qtbl[, .N]
+    qtbl <<- qtbl[!id]
+    soltbl <<- lapply(soltbl, function(x) x[-id])
+    ranktbl <<- ranktbl[!id]
+}
