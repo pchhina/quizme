@@ -136,7 +136,9 @@ ask <- function() {
 
 #' Show answer
 #' 
-#' This will show the answer to the last question presented
+#' This will show the answer to the last question presented. If the answer is
+#' stored in an image file then the image will be displated in the current
+#' graphics window
 #' 
 #' @return answer to the last question presented. This helps the user to evaluate their answer.
 #' 
@@ -151,6 +153,11 @@ tell <- function() {
     answer <- soltbl[[2]][[qid]]
     for(i in seq_along(answer)) {
         cat(paste(answer[i],"\n"))
+    }
+    if (grepl("img", answer)) {
+            imgfile <- paste0("~/.quizme/images/", qid, ".png")
+            img <- png::readPNG(imgfile)
+            grid::grid.raster(img)
     }
     }
 }

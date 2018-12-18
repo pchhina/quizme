@@ -10,7 +10,9 @@ tell()
 answer to the last question presented. This helps the user to evaluate their answer.
 }
 \description{
-This will show the answer to the last question presented
+This will show the answer to the last question presented. If the answer is
+stored in an image file then the image will be displated in the current
+graphics window
 }
 \examples{
 \dontrun{tell()}
