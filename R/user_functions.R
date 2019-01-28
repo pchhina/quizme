@@ -76,8 +76,9 @@ quizme <- function() {
 #' 
 #' @export
 addq <- function(tags = c("")) {
-    x <- scan(what = character(), sep = "\n")
     tot <- nrow(qtbl)
+    cat(paste("Adding Question ",tot + 1L, "\n"))
+    x <- scan(what = character(), sep = "\n")
     timecreated = now()
     q <- data.table(id = tot + 1L,
                      question = x[1],
@@ -131,6 +132,11 @@ ask <- function() {
         timeasked <<- now()
         question <- qtbl[qid, 2]
         cat(paste(question, "\n"))
+        if (grepl("img$", question)) {
+            imgfile <- paste0("~/.quizme/images/", qid, "q.png")
+            img <- png::readPNG(imgfile)
+            grid::grid.raster(img)
+    }
     }
 }
 
@@ -154,8 +160,8 @@ tell <- function() {
     for(i in seq_along(answer)) {
         cat(paste(answer[i],"\n"))
     }
-    if (grepl("img", answer)) {
-            imgfile <- paste0("~/.quizme/images/", qid, ".png")
+    if (any(grepl("^img$", answer))) {
+            imgfile <- paste0("~/.quizme/images/", qid, "a.png")
             img <- png::readPNG(imgfile)
             grid::grid.raster(img)
     }
